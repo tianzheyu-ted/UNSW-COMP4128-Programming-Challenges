@@ -14,10 +14,8 @@ The problem presents a 3 x N grid where we need to choose the signs of variables
 
 ### Challenges and Overcoming
 
-My initial approach was a greedy strategy, attempting to deduce the signs based solely on the original middle row horizontally. I quickly realized this was a fatal misunderstanding of the problem—the variables are highly interdependent globally, and a local greedy choice on a free variable can easily lock the system into a contradiction later on. 
+My initial challenge was a design flaw: I attempted a greedy strategy horizontally, which failed because the variables are highly interdependent globally.
 
-After pivoting to build a 2-SAT implication graph and using Kosaraju's algorithm to find SCCs, the real challenge shifted to implementation details.
+After pivoting to a 2-SAT implication graph using Kosaraju's algorithm, I ran into a bug where my program failed to identify the correct SCCs. I found the bug when I printed the intermediate SCC groupings and noticed the logic was completely broken as I had forgotten to explicitly build the reversed graph (rev_adj) and accidentally reused the visited array (already full of true) from the first DFS pass without resetting it.
 
-1. I initially forgot to explicitly build the reversed graph (`rev_adj`), which is the core requirement for Kosaraju's second DFS part.
-
-2. I accidentally reused the first pass's `visited` array(already full of true) inside the second DFS.
+Next time to prevent these missing step and state leakage bugs during an exam, I will write out the strict phases of Kosaraju's algorithm (Build Both Graphs $\rightarrow$ DFS 1 $\rightarrow$ Reset Visited Array $\rightarrow$ DFS 2) as comments before coding any actual logic, ensuring no structural steps are skipped.

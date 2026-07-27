@@ -11,3 +11,9 @@ The question is saying that there are n employees each except one with exactly o
 
 ### Challenges and Overcoming
 The question essentially asks us to find the directed minimum spanning tree in that DAG. After getting some hint, generally, finding this in a directed graph requires the Chu-Liu/Edmonds algorithm. However, the hierarchy is a DAG since the supervisor's qualification is always larger. Because of this DAG property, we can bypass the complex algorithm and use a greedy approach. We can find the minimum spanning tree just by selecting the in edge with smallest cost for each node. And after that, we will check if in the graph there is only 1 node having no in edge (by define there is one node without supervisor).
+
+However, when coding this greedy approach, my program initially failed on test cases where the hierarchy was impossible to build. I found this bug when my program outputted a massive garbage sum instead of -1.
+
+Tracing back the logic, the issue was how I handled unreachable nodes. I had initialized the min_in_cost array with a large infinity value (1e9) to find the minimum edges. But in my final summation loop, I forgot to check if a node actually received a valid supervisor.
+
+Next time to prevent this bug, whenever I use an INF initialization for a greedy choice array, I will explicitly write a validation pass before summing the costs.

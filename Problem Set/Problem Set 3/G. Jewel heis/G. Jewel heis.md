@@ -5,25 +5,11 @@
 ![](submission.png)
 
 ### Process
-The question is saying that there are n jewels on the 2D plane. These jewels have k colors. Define one grab as taking all the jewels lying on some horizontal segment or below it. The task is to find the maximum number of jewels one grab can get without getting all k colors.
+Transformed the problem into finding maximal empty rectangles for each excluded color using a monotonic stack, then used a horizontal sweep line and a segment tree to count the jewels inside these candidate rectangles.
 
 ### Challenges and Overcoming
+When coding my sweep line event sorting, I ran into a bug where my segment tree was undercounting the maximum number of jewels for certain candidate rectangles. I found it when I printed out the segment tree query results and noticed that jewels lying exactly on the top boundary of the rectangle were being excluded from the total count. 
 
-**Reverse Thinking**
+The issue was a flaw in my sorting logic for events that share the exact same Y-coordinate. I was processing the rectangle evaluation queries before inserting the newly encountered jewels into the segment tree. Because the problem explicitly states a grab takes jewels "lying on some horizontal segment or below it" (inclusive boundary), the jewels at height $Y$ must be processed and added to the segment tree before the rectangle at height $Y$ is queried. 
 
-Cannot contain all colors means at least one color is completely excluded. Suppose the currently excluded color is C, then all jewels that have color C become obstacles that must not be included in the region.
-
-
-**Monotonic Stack for Maximal Rectangles**
-
-For each excluded color C, the problem is transformed into finding the maximum empty rectangle regions that does not contain a color C jewel. Using the X distance between two adjacent mines as the width and the Y coordinate of the mine as the height constraint, a monotonic stack can be used to find the set of "maximum candidate rectangles" for all colors in a time complexity of O(N). 
-
-
-**Data Decoupling**
-
-To meet the needs of different algorithms, the Jewel data must be stored in two copies. One copy, grouped by color (`vector<vector<Jewel>>`), is used for efficient rectangle finding using a monotonic stack; the other copy, globally flattened (`vector<Jewel>`), is used for subsequent scanline sorting.
-
-
-**Sweep Line & Segment Tree**
-
-All jewels and all found candidate rectangles are uniformly sorted by their Y-coordinate (height) from smallest to largest. A horizontal scanline is used to scan from bottom to top: when a jewel with a height $\le$ of the rectangle's height is encountered, its discretized X-coordinate is added to the segment tree (single-point update +1); when processing the current rectangle, the sum of its left and right boundaries (left, right) is directly queried in the segment tree, which is the total number of jewels that can be captured by that rectangle.
+Next time to prevent this bug, whenever I implement a sweep line algorithm, I will explicitly define and write down a tie-breaker rule for events at the same coordinate. I will map out whether the geometric boundaries are inclusive or exclusive beforehand to guarantee that data structures are updated in the correct order before being queried.
