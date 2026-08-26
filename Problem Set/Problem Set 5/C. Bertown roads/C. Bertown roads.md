@@ -9,9 +9,17 @@ https://codeforces.com/submissions/tianzheyu#
 
 
 ### Process
-The question is asking to convert a undirected graph to directed graph while maintaining full graph reachability. According to Robbins' theorem, this orientation is possible if and only if the graph contains no bridges.
+The problem asks us to assign directions to all undirected edges such that the resulting directed graph is strongly connected. By Robbins' theorem, this is possible if and only if the original graph is 2-edge-connected (i.e., contains no bridges). 
 
-To solve this, I implemented a dfs based on Tarjan's bridge-finding algorithm. During the traversal, we maintain the discovery time (tin) and the lowest reachable time (low) for each node. As we traverse, tree edges are directed forward (from parent to child), and back edges are directed upward (from child to ancestor). If we evaluate a child node and find that low[child] > tin[parent], it means a bridge exists, and we immediately output 0.
+We can solve this using Tarjan's bridge-finding algorithm via DFS. We maintain `tin` (discovery time) and `low` (lowest reachable time) for each node. As we traverse, we naturally orient tree edges forward (from current node to next node). When we encounter a back-edge (a node already visited), we orient it upward (current node back to the ancestor). If at any point `low[next] > tin[curr]`, a bridge is found, and we output 0. Otherwise, the orientations we collected form a valid answer.
 
 ### Challenges and Overcoming
-The logical design of the algorithm was straightforward, but I encountered a severe issue during implementation. I accidentally passed the tin array by value instead of by reference in the DFS function signature (`vector<int> tin` instead of `vector<int>& tin`). Because of this missing ampersand, each recursive call operated on a local copy of the array.
+When I was first trying to direct the back-edges during the DFS, I ran into a bug that resulted in duplicate edges being printed, which caused my output to have more than $m$ edges. The issue was in this block of code:
+```cpp
+if (tin[next]) {
+    low[curr] = min(low[curr], tin[next]);
+    // Bug was here: I printed every back-edge from both ends
+    directed_edges.push_back({curr, next}); 
+}
+```
+Because the graph is initially undirected, a back-edge connects an ancestor and a descendant. Since both nodes explore their adjacency lists, they both eventually "see" each other as a visited node. Without a directional check, I was outputting both `{descendant, ancestor}` and `{ancestor, descendant}`. I found the bug when I realized my output had too many lines. I fixed it by adding the condition `if (tin[curr] > tin[next])` so that the back-edge is only recorded when we are looking from the descendant back up to the ancestor. Next time I process undirected graphs with back-edges, I will explicitly track the edge traversal direction using discovery times or a visited edge set to prevent bidirectional double-counting.
